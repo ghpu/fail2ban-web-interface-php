@@ -38,4 +38,24 @@
 
   $couldnot = "Impossible de bannir/débannir cette adresse IP";
 
+  $showignored_txt = "Afficher les IPs en liste blanche par Jail ?";
+
+  $whitelistedclientsperJail = "IPs en liste blanche";
+
+  $manuallyaddwhitelistedclienttoJail = "Ajouter une IP en liste blanche (ne sera pas bannie)";
+
+  $noignoredclients = "Pas d'IP en liste blanche";
+
+  $ignoreip = "Liste blanche";
+
+  $unignoreip = "Retirer de la liste blanche";
+
+  $ipsuccessfullyignored = "IP ajoutee en liste blanche avec succes";
+
+  $ipsuccessfullyunignored = "IP retiree de la liste blanche avec succes";
+
+  $couldnotignore = "Impossible d'ajouter l'IP en liste blanche";
+
+  $couldnotunignore = "Impossible de retirer l'IP de la liste blanche";
+
 ?>

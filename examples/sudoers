@@ -1,3 +1,14 @@
 # Grant sudo permissions to the user to manage fail2ban-client
+# Replace __USER__ with the web server user (e.g., www-data, apache, nginx)
+#
+# This configuration allows the following fail2ban-client commands:
+# - status: View jail status and banned IPs
+# - get <jail> findtime/bantime/maxretry: View jail configuration
+# - get <jail> ignoreip: View whitelisted (ignored) IPs per jail
+# - set <jail> banip/unbanip <ip>: Ban or unban an IP address
+# - set <jail> addignoreip/delignoreip <ip>: Add or remove IP from whitelist
+#
+# Note: Whitelist changes via CLI are runtime-only and do not persist
+# to jail.local. To make permanent whitelist changes, edit jail.local directly.
 __USER__ ALL=(ALL) !ALL
 __USER__ ALL=(ALL) NOPASSWD: /usr/bin/fail2ban-client

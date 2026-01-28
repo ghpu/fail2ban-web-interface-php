@@ -38,4 +38,24 @@
 
   $couldnot = "Could not ban/unban that IP";
 
+  $showignored_txt = "Show whitelisted (ignored) IPs per jail?";
+
+  $whitelistedclientsperJail = "Whitelisted (ignored) IPs per Jail";
+
+  $manuallyaddwhitelistedclienttoJail = "Add IP to whitelist (will not be banned)";
+
+  $noignoredclients = "No whitelisted IP";
+
+  $ignoreip = "Whitelist IP";
+
+  $unignoreip = "Remove from whitelist";
+
+  $ipsuccessfullyignored = "IP successfully added to whitelist";
+
+  $ipsuccessfullyunignored = "IP successfully removed from whitelist";
+
+  $couldnotignore = "Could not add IP to whitelist";
+
+  $couldnotunignore = "Could not remove IP from whitelist";
+
 ?>

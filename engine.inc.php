@@ -90,4 +90,61 @@
     return 'OK';
   }
 
+  function list_ignored_ips($jail) {
+    $ignored_ips=array();
+    $output=array();
+    @exec(SUDO.' '.F2BC.' get '.escapeshellarg($jail).' ignoreip 2>/dev/null', $output);
+    foreach($output as $line) {
+      $line=trim($line);
+      if($line!='' && strpos($line, '|-')===0) {
+        $ip=trim(substr($line, 2));
+        if($ip!='') {
+          $ignored_ips[]=$ip;
+        }
+      } elseif($line!='' && strpos($line, '`-')===0) {
+        $ip=trim(substr($line, 2));
+        if($ip!='') {
+          $ignored_ips[]=$ip;
+        }
+      }
+    }
+    if(count($ignored_ips)>0) {
+      return $ignored_ips;
+    }
+    return false;
+  }
+
+  function validate_ip_or_cidr($ip) {
+    if(filter_var($ip, FILTER_VALIDATE_IP)) {
+      return true;
+    }
+    if(strpos($ip, '/')!==false) {
+      $parts=explode('/', $ip);
+      if(count($parts)==2) {
+        $addr=$parts[0];
+        $prefix=$parts[1];
+        if(filter_var($addr, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+          return is_numeric($prefix) && $prefix>=0 && $prefix<=32;
+        }
+        if(filter_var($addr, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+          return is_numeric($prefix) && $prefix>=0 && $prefix<=128;
+        }
+      }
+    }
+    return false;
+  }
+
+  function add_remove_ignoreip($action,$jail,$ip) {
+    if($jail=='') {
+      return 'nojailselected';
+    } elseif(!validate_ip_or_cidr($ip)) {
+      return 'ipnotvalid';
+    }
+    $erg=@exec(SUDO.' '.F2BC.' set '.escapeshellarg($jail).' '.escapeshellarg($action).' '.escapeshellarg($ip));
+    if($erg!=1 && $erg!=$ip) {
+      return 'couldnot';
+    }
+    return 'OK';
+  }
+
 ?>

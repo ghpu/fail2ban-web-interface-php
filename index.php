@@ -16,7 +16,7 @@
   }
 
   if(isset($_POST['submit_settings'])) {
-    header("Location: ".$_SERVER['PHP_SELF']."?usedns=".$_POST['usedns']."&jailnoempty=".$_POST['jailnoempty']."&jailinfo=".$_POST['jailinfo']);
+    header("Location: ".$_SERVER['PHP_SELF']."?usedns=".$_POST['usedns']."&jailnoempty=".$_POST['jailnoempty']."&jailinfo=".$_POST['jailinfo']."&showignored=".$_POST['showignored']);
     unset($_POST);
     clearstatcache();
     sleep(1);
@@ -53,6 +53,38 @@
       sleep(1);
     }
   }
+
+  if(isset($_POST['submit_addignore'])) {
+    $error_ignore=add_remove_ignoreip("addignoreip",$_POST['ignore_jail'],$_POST['ignore_ip']);
+    if($error_ignore!='OK') {
+      if($error_ignore=='nojailselected') {
+        $error_ignore='<p class="msg_er">'.$nojailselected.'</p>';
+      }
+      elseif($error_ignore=='ipnotvalid') {
+        $error_ignore='<p class="msg_er">'.$ipnotvalid.'</p>';
+      }
+      elseif($error_ignore=='couldnot') {
+        $error_ignore='<p class="msg_er">'.$couldnotignore.'</p>';
+      }
+    } else {
+      $error_ignore='<p class="msg_ok">'.$ipsuccessfullyignored.'</p>';
+      unset($_POST);
+      clearstatcache();
+      sleep(1);
+    }
+  }
+
+  if(isset($_POST['submit_delignore'])) {
+    $error_unignore=add_remove_ignoreip("delignoreip",$_POST['unignore_jail'],$_POST['unignore_ip']);
+    if($error_unignore!='OK') {
+      $error_unignore='<p class="msg_er">'.$couldnotunignore.'</p>';
+    } else {
+      $error_unignore='<p class="msg_ok">'.$ipsuccessfullyunignored.'</p>';
+      unset($_POST);
+      clearstatcache();
+      sleep(1);
+    }
+  }
 ?>
 
 <!DOCTYPE html>
@@ -84,6 +116,7 @@
       $usedns=$_GET['usedns'];
       $jailnoempty=$_GET['jailnoempty'];
       $jailinfo=$_GET['jailinfo'];
+      $showignored=$_GET['showignored'];
       if($usedns==1) {
         $usednsv="checked='checked'";
       } else {
@@ -99,6 +132,11 @@
       } else {
         $jailinfov=="";
       }
+      if($showignored==1) {
+        $showignoredv="checked='checked'";
+      } else {
+        $showignoredv=="";
+      }
     ?>
     <form name="settings" method="post">
       <table>
@@ -107,13 +145,15 @@
             <label for="usedns"><?=$usedns_txt?></label>
             <br><label for="jailnoempty"><?=$jailnoempty_txt?></label>
             <br><label for="jailinfo"><?=$jailinfo_txt?></label>
+            <br><label for="showignored"><?=$showignored_txt?></label>
           </td>
           <td>
             <input type="checkbox" name="usedns" id="usedns" value="1" <?=$usednsv?>/>
             <br><input type="checkbox" name="jailnoempty" id="jailnoempty" value="1" <?=$jailnoemptyv?>/>
             <br><input type="checkbox" name="jailinfo" id="jailinfo" value="1" <?=$jailinfov?>/>
+            <br><input type="checkbox" name="showignored" id="showignored" value="1" <?=$showignoredv?>/>
           </td>
-          <td rowspan="3">
+          <td rowspan="4">
             <button class="button" type="submit" name="submit_settings"><?=$apply ?>
               <img src="images/apply.svg" alt="apply" title="<?=$apply ?>">
             </button>
@@ -197,6 +237,72 @@
         </tr>
       </table>
     </form>
+    <?php if($showignored==1): ?>
+    <h2><?=$whitelistedclientsperJail?></h2>
+    <?=$error_unignore==null?"&nbsp;":$error_unignore?>
+    <table>
+      <?php
+        foreach($jails as $jail=>$clients) {
+          $ignored_ips=list_ignored_ips($jail);
+          if($jailnoempty==1 || is_array($ignored_ips)) {
+            echo '<thead><tr><td class="bold" colspan="2">'.strtoupper($jail).'</td></tr></thead>';
+            if(is_array($ignored_ips)) {
+              foreach($ignored_ips as $ignored_ip) {
+                echo '
+                  <tr class="highlight">
+                    <form name="unignore" method="POST">
+                      <input type="hidden" name="unignore_jail" value="'.$jail.'">
+                      <input type="hidden" name="unignore_ip" value="'.htmlspecialchars($ignored_ip).'">
+                      <td align="right">'.htmlspecialchars($ignored_ip).'</td>
+                      <td align="center">
+                        <button class="button" type="submit" name="submit_delignore">
+                          <img src="images/del.svg" alt="del" title="'.$unignoreip.' '.htmlspecialchars($ignored_ip).'">
+                        </button>
+                      </td>
+                    </form>
+                  </tr>
+                ';
+              }
+            } else {
+              echo '<tr class="highlight"><td class="msg_gr" colspan="2">'.$noignoredclients.'</td></tr>';
+            }
+          }
+        }
+      ?>
+    </table>
+    <h2><?=$manuallyaddwhitelistedclienttoJail?></h2>
+    <?=$error_ignore==null?null:$error_ignore?>
+    <form name="ignore" method="POST">
+      <table>
+        <tr>
+          <th>Jail</th>
+          <th>IP</th>
+          <th><?=$ignoreip?></th>
+        </tr>
+        <tr class="highlight">
+          <td>
+            <select name="ignore_jail"><option value="">- <?=$select?> -</option>
+              <?php
+                foreach($jails as $jail=>$clients) {
+                  echo '<option value="'.$jail.'"';
+                  if($_POST['ignore_jail']==$jail) {
+                    echo ' selected';
+                  }
+                  echo '>'.$jail.'</option>';
+                }
+              ?>
+            </select>
+          </td>
+          <td><input type="text" name="ignore_ip" value="<?=$_POST['ignore_ip']?>"></td>
+          <td align="center">
+            <button class="button" type="submit" name="submit_addignore">
+              <img src="images/add.svg" alt="add" title="<?=$ignoreip ?>">
+            </button>
+          </td>
+        </tr>
+      </table>
+    </form>
+    <?php endif; ?>
     <br>
   </body>
   <footer>
